@@ -6,7 +6,7 @@ import { useUserStore } from "@/stores/user-store";
 import {
   normalizePoint,
   getPointerPosition,
-  renderStroke,
+  renderStrokePreview,
   renderAllStrokes,
   clearCanvas as clearCanvasUtil,
 } from "@/lib/canvas-utils";
@@ -42,7 +42,7 @@ export function useCanvas({ roomId }: UseCanvasOptions) {
     if (!canvas || !ctx || !currentStrokeRef.current) return;
 
     clearCanvasUtil(ctx, canvas);
-    renderStroke(ctx, currentStrokeRef.current, canvas);
+    renderStrokePreview(ctx, currentStrokeRef.current, canvas);
   }, []);
 
   // Clear preview canvas
@@ -63,6 +63,7 @@ export function useCanvas({ roomId }: UseCanvasOptions) {
   const startDrawing = useCallback(
     (e: React.PointerEvent<HTMLElement>) => {
       const canvas = mainCanvasRef.current;
+      const target = e.currentTarget;
       if (!canvas) return;
 
       isDrawingRef.current = true;
@@ -82,7 +83,7 @@ export function useCanvas({ roomId }: UseCanvasOptions) {
       renderPreview();
 
       // Capture pointer for smooth drawing
-      canvas.setPointerCapture(e.pointerId);
+      target.setPointerCapture(e.pointerId);
     },
     [color, brushSize, tool, user.id, renderPreview],
   );
@@ -121,9 +122,10 @@ export function useCanvas({ roomId }: UseCanvasOptions) {
   const endDrawing = useCallback(
     (e: React.PointerEvent<HTMLElement>) => {
       const canvas = mainCanvasRef.current;
+      const target = e.currentTarget;
       if (!canvas) return;
 
-      canvas.releasePointerCapture(e.pointerId);
+      target.releasePointerCapture(e.pointerId);
 
       if (!isDrawingRef.current || !currentStrokeRef.current) return;
 

@@ -28,28 +28,8 @@ export function DrawingCanvas({ roomId, className }: DrawingCanvasProps) {
     if (!container || !mainCanvas || !previewCanvas) return;
 
     const rect = container.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
 
-    // Set display size
-    mainCanvas.style.width = `${rect.width}px`;
-    mainCanvas.style.height = `${rect.height}px`;
-    previewCanvas.style.width = `${rect.width}px`;
-    previewCanvas.style.height = `${rect.height}px`;
-
-    // Set actual size in memory (scaled for retina)
-    mainCanvas.width = rect.width * dpr;
-    mainCanvas.height = rect.height * dpr;
-    previewCanvas.width = rect.width * dpr;
-    previewCanvas.height = rect.height * dpr;
-
-    // Scale context for retina
-    const mainCtx = mainCanvas.getContext("2d");
-    const previewCtx = previewCanvas.getContext("2d");
-
-    if (mainCtx) mainCtx.scale(dpr, dpr);
-    if (previewCtx) previewCtx.scale(dpr, dpr);
-
-    // Reset canvas dimensions for drawing calculations
+    // Set canvas dimensions to match container
     mainCanvas.width = rect.width;
     mainCanvas.height = rect.height;
     previewCanvas.width = rect.width;
@@ -89,14 +69,9 @@ export function DrawingCanvas({ roomId, className }: DrawingCanvasProps) {
         style={{ cursor: "crosshair" }}
       />
 
-      {/* Preview canvas for current stroke */}
+      {/* Preview canvas for current stroke - also handles pointer events */}
       <canvas
         ref={previewCanvasRef}
-        className="absolute inset-0 touch-none pointer-events-none"
-      />
-
-      {/* Interactive layer for pointer events */}
-      <div
         className="absolute inset-0 touch-none"
         style={{ cursor: "crosshair" }}
         onPointerDown={startDrawing}
