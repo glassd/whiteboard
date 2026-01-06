@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Whiteboard background -->
+  <rect x="64" y="96" width="384" height="288" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="8"/>
+
+  <!-- Drawing strokes -->
+  <path d="M120 280 Q180 180 240 220 Q300 260 340 200 Q380 140 420 180" stroke="#8b5cf6" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <circle cx="160" cy="320" r="24" fill="#22c55e"/>
+  <rect x="320" y="280" width="60" height="60" rx="8" fill="#3b82f6"/>
+
+  <!-- Pencil -->
+  <g transform="translate(360, 60) rotate(45)">
+    <rect x="0" y="0" width="24" height="120" rx="4" fill="#fbbf24"/>
+    <polygon points="12,120 0,150 24,150" fill="#1e293b"/>
+    <rect x="0" y="0" width="24" height="20" rx="4" fill="#f472b6"/>
+  </g>
+</svg>

@@ -9,6 +9,7 @@ A real-time collaborative drawing board built with React, Socket.io, and HTML5 C
 - **Drawing tools** - Pen, eraser, 12 colors, adjustable brush size
 - **Undo/redo** - Full history with keyboard shortcuts (Cmd/Ctrl+Z)
 - **User presence** - See who's in the room with live cursor tracking
+- **Rename yourself** - Click the pencil icon next to your name
 - **Dark mode** - Toggle between light and dark themes
 
 ## Tech Stack
@@ -41,32 +42,52 @@ Open http://localhost:5173
 
 ## Production Deployment
 
+### Build
+
 ```bash
 # Build frontend
-bun run build
+VITE_SOCKET_URL=https://your-server.com bun run build
 
 # Build server
-cd server && bun run build && cd ..
+cd server && bun run build
 ```
 
-**Frontend:** Deploy the `dist/` folder to any static host (Vercel, Netlify, Cloudflare Pages).
+### Frontend
 
-Set environment variables during build:
-```bash
-VITE_SOCKET_URL=https://your-server.com bun run build
-```
+Deploy the `dist/` folder to any static host. Configure SPA fallback to serve `index.html` for all routes.
 
-To deploy to a subpath (e.g., `www.example.com/whiteboard`):
+**Subpath deployment** (e.g., `example.com/whiteboard`):
 ```bash
 VITE_BASE_PATH=/whiteboard/ VITE_SOCKET_URL=https://your-server.com bun run build
 ```
-Then copy the contents of `dist/` to your `/whiteboard` directory.
 
-**Backend:** Run the compiled server:
-```bash
-cd server && node dist/index.js
+Nginx config for subpath:
+```nginx
+location /whiteboard {
+    alias /path/to/dist;
+    try_files $uri $uri/ /whiteboard/index.html;
+}
 ```
 
-Environment variables:
+### Backend
+
+```bash
+cd server
+CLIENT_URL=https://your-domain.com node dist/index.js
+```
+
+**Environment variables:**
 - `PORT` - Server port (default: 3001)
-- `CLIENT_URL` - Frontend URL for CORS (default: http://localhost:5173)
+- `CLIENT_URL` - Allowed origins for CORS, comma-separated (default: http://localhost:5173)
+
+**Nginx config for WebSocket proxy:**
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_read_timeout 86400;
+}
+```
