@@ -1,7 +1,29 @@
 import type { Room, Stroke, UserInfo } from '../types.js';
 
+const MAX_STROKES_PER_ROOM = 10_000;
+const STALE_ROOM_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const STALE_ROOM_THRESHOLD = 60 * 60 * 1000; // 1 hour
+
 export class RoomManager {
   private rooms: Map<string, Room> = new Map();
+  private cleanupTimer: ReturnType<typeof setInterval>;
+
+  constructor() {
+    this.cleanupTimer = setInterval(() => this.cleanupStaleRooms(), STALE_ROOM_CHECK_INTERVAL);
+  }
+
+  destroy(): void {
+    clearInterval(this.cleanupTimer);
+  }
+
+  private cleanupStaleRooms(): void {
+    const now = Date.now();
+    for (const [roomId, room] of this.rooms) {
+      if (room.users.size === 0 && now - room.lastActivity.getTime() > STALE_ROOM_THRESHOLD) {
+        this.rooms.delete(roomId);
+      }
+    }
+  }
 
   createRoom(roomId: string): Room {
     const room: Room = {
@@ -55,6 +77,10 @@ export class RoomManager {
     const room = this.rooms.get(roomId);
     if (!room) return;
 
+    if (room.strokes.length >= MAX_STROKES_PER_ROOM) {
+      // Remove oldest 10% to make room
+      room.strokes.splice(0, Math.floor(MAX_STROKES_PER_ROOM * 0.1));
+    }
     room.strokes.push(stroke);
     room.lastActivity = new Date();
   }
@@ -92,7 +118,7 @@ export class RoomManager {
     if (!room) return null;
 
     return {
-      strokes: [...room.strokes],
+      strokes: room.strokes,
       users: Array.from(room.users.values()),
     };
   }
