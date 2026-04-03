@@ -1,3 +1,5 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -9,6 +11,8 @@ import type {
   ServerToClientEvents,
   SocketData,
 } from "./types.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const httpServer = createServer(app);
@@ -36,6 +40,16 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+// Serve static frontend in production
+if (process.env.NODE_ENV === "production") {
+  const clientDist = path.resolve(__dirname, "../../client");
+  app.use(express.static(clientDist));
+  // SPA fallback — let React Router handle client-side routes
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+}
 
 // Room manager instance
 const roomManager = new RoomManager();
